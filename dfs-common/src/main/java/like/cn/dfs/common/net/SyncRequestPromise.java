@@ -66,7 +66,7 @@ public class SyncRequestPromise {
                 } else {
                     if (this.response == null) {
                         this.response = nettyPacket;
-                    } else {
+                    } else { // 合并包
                         this.response.mergeChunkBody(nettyPacket);
                     }
                 }

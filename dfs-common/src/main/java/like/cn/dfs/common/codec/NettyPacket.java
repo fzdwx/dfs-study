@@ -102,6 +102,61 @@ public class NettyPacket {
     }
 
     /**
+     * 合并消息
+     *
+     * @see {@link #parseToPacket(io.netty.buffer.ByteBuf)} 在这里分包
+     */
+    public void mergeChunkBody(NettyPacket other) {
+        int newBodyLength = body.length + other.getBody().length;
+        byte[] newBody = new byte[newBodyLength];
+        System.arraycopy(body, 0, newBody, 0, body.length);
+        System.arraycopy(other.getBody(), 0, newBody, body.length, other.getBody().length);
+        this.body = newBody;
+    }
+
+    /**
+     * 拆分消息体
+     *
+     * @return {@link List}<{@link NettyPacket}>
+     */
+    public List<NettyPacket> partitionChunk(boolean supportChunked, int maxPackageSize) {
+        if (!supportChunked) {
+            return Collections.singletonList(this);
+        }
+        int bodyLength = body.length;
+        if (bodyLength <= maxPackageSize) {
+            // 不需要拆包
+            return Collections.singletonList(this);
+        }
+
+        // 开始拆包
+        int packageCount = bodyLength / maxPackageSize;
+        if (bodyLength % maxPackageSize > 0) {
+            packageCount++;
+        }
+        List<NettyPacket> results = new LinkedList<>();
+        int remainLength = bodyLength;
+        for (int i = 0; i < packageCount; i++) {
+            int partitionBodyLength = Math.min(maxPackageSize, remainLength);
+            byte[] partitionBody = new byte[partitionBodyLength];
+            System.arraycopy(body, bodyLength - remainLength, partitionBody, 0, partitionBodyLength);
+            remainLength -= partitionBodyLength;
+            NettyPacket partitionPackage = new NettyPacket();
+            partitionPackage.body = partitionBody;
+            partitionPackage.headers = this.headers;
+            partitionPackage.setSupportChunked(true);
+            results.add(partitionPackage);
+        }
+        // 增加一个结束标记包
+        NettyPacket tailPackage = new NettyPacket();
+        tailPackage.body = new byte[0];
+        tailPackage.headers = this.headers;
+        tailPackage.setSupportChunked(true);
+        results.add(tailPackage);
+        return results;
+    }
+
+    /**
      * 获取当前消息的类型
      */
     public int getPacketType() {
@@ -113,10 +168,6 @@ public class NettyPacket {
      */
     public void setPacketType(int packetType) {
         this.headers.put("packetType", String.valueOf(packetType));
-    }
-
-    public byte[] getBody() {
-        return body;
     }
 
     /**
@@ -167,61 +218,12 @@ public class NettyPacket {
         headers.put("supportChunked", String.valueOf(chunkedFinish));
     }
 
+    public byte[] getBody() {
+        return body;
+    }
+
     public void setNodeId(int nodeId) {
         headers.put("nodeId", String.valueOf(nodeId));
-    }
-
-    /**
-     * 合并消息
-     */
-    public void mergeChunkBody(NettyPacket other) {
-        int newBodyLength = body.length + other.getBody().length;
-        byte[] newBody = new byte[newBodyLength];
-        System.arraycopy(body, 0, newBody, 0, body.length);
-        System.arraycopy(other.getBody(), 0, newBody, body.length, other.getBody().length);
-        this.body = newBody;
-    }
-
-    /**
-     * 拆分消息体
-     *
-     * @return {@link List}<{@link NettyPacket}>
-     */
-    public List<NettyPacket> partitionChunk(boolean supportChunked, int maxPackageSize) {
-        if (!supportChunked) {
-            return Collections.singletonList(this);
-        }
-        int bodyLength = body.length;
-        if (bodyLength <= maxPackageSize) {
-            // 不需要拆包
-            return Collections.singletonList(this);
-        }
-
-        // 开始拆包
-        int packageCount = bodyLength / maxPackageSize;
-        if (bodyLength % maxPackageSize > 0) {
-            packageCount++;
-        }
-        List<NettyPacket> results = new LinkedList<>();
-        int remainLength = bodyLength;
-        for (int i = 0; i < packageCount; i++) {
-            int partitionBodyLength = Math.min(maxPackageSize, remainLength);
-            byte[] partitionBody = new byte[partitionBodyLength];
-            System.arraycopy(body, bodyLength - remainLength, partitionBody, 0, partitionBodyLength);
-            remainLength -= partitionBodyLength;
-            NettyPacket partitionPackage = new NettyPacket();
-            partitionPackage.body = partitionBody;
-            partitionPackage.headers = this.headers;
-            partitionPackage.setSupportChunked(true);
-            results.add(partitionPackage);
-        }
-        // 增加一个结束标记包
-        NettyPacket tailPackage = new NettyPacket();
-        tailPackage.body = new byte[0];
-        tailPackage.headers = this.headers;
-        tailPackage.setSupportChunked(true);
-        results.add(tailPackage);
-        return results;
     }
 
     @Override

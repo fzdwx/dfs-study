@@ -56,6 +56,7 @@ public class RequestWrapper {
     private void sendResponse(MessageLite response) {
         byte[] body = response == null ? new byte[0] : response.toByteArray();
         NettyPacket nettyResponse = NettyPacket.buildPacket(body, NettyPacketType.getEnum(request.getPacketType()));
+        // 手动分包
         List<NettyPacket> responses = nettyResponse.partitionChunk(request.isSupportChunked(), Constants.CHUNKED_SIZE);
         if (responses.size() > 1) {
             log.info("返回响应通过chunked方式，共拆分为{}个包", responses.size());

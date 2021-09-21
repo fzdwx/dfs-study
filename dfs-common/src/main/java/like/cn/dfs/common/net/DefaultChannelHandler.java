@@ -9,9 +9,9 @@ import like.cn.dfs.common.net.listener.NettyConnectListener;
 import like.cn.dfs.common.net.listener.NettyPacketListener;
 import like.cn.dfs.common.utils.DefaultScheduler;
 import like.cn.dfs.common.utils.NetUtils;
+import like.cn.dfs.common.utils.PrettyCodes;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -179,6 +179,6 @@ public class DefaultChannelHandler extends AbstractChannelHandler {
 
     @Override
     protected Set<Integer> interestPackageTypes() {
-        return Collections.emptySet();
+        return PrettyCodes.interestAll();
     }
 }

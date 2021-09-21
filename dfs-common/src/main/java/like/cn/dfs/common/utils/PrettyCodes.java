@@ -1,7 +1,9 @@
 package like.cn.dfs.common.utils;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 漂亮的代码
@@ -37,5 +39,9 @@ public class PrettyCodes {
 
     public static byte[] trimBytes() {
         return new byte[0];
+    }
+
+    public static Set<Integer> interestAll() {
+        return Collections.emptySet();
     }
 }
