@@ -60,9 +60,9 @@ public class SyncRequestPromise {
     public void result(NettyPacket nettyPacket) {
         synchronized (this) {
             if (nettyPacket.isSupportChunked()) {
-                if (nettyPacket.getBody().length == 0) {
+                if (nettyPacket.getBody().length == 0) { // 有一个结束标记，会发一个空包过来
                     this.receiveResponseCompleted = true;
-                    notifyAll();
+                    notifyAll(); //
                 } else {
                     if (this.response == null) {
                         this.response = nettyPacket;

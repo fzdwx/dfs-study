@@ -83,7 +83,6 @@ public class SyncRequestSupport {
         nettyPacket.setSequence(name + "-" + Constants.REQUEST_COUNTER.getAndIncrement());
     }
 
-
     /**
      * 检查请求是否超时
      * <pre>
