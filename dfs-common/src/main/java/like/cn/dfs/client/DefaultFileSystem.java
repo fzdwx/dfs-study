@@ -64,6 +64,7 @@ public class DefaultFileSystem implements FileSystem {
                 commandLineListener.onConnectFailed();
             }
         });
+        // 异步连接
         this.netClient.connect(config.ip(), config.port());
         this.netClient.ensureConnected();
         log.info("和NameNode建立连接成功");

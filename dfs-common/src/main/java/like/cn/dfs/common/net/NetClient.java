@@ -100,7 +100,7 @@ public class NetClient {
      * 连接
      */
     public void connect(String ip, int port) {
-        connect(ip, port, 1, 0);
+        connect(ip, port, 0, 0);
     }
 
     /**
@@ -214,6 +214,9 @@ public class NetClient {
 
     /**
      * 连接
+     * <PRE>
+     * 异步连接，保证在后台执行，主要作用是为了重试
+     * </PRE>
      *
      * @param ip           ip地址
      * @param port         端口号
@@ -238,7 +241,7 @@ public class NetClient {
                 log.info("发起连接后同步等待连接被打断");
             } finally {
                 int curConnectTimes = connectTimes + 1;
-                maybeRetry(ip, port, curConnectTimes);
+                maybeRetry(ip, port, curConnectTimes);  // 重试
             }
         }, delay);
     }
