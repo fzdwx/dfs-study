@@ -2,8 +2,11 @@ package like.cn.dfs.common.codec;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.netty.buffer.ByteBuf;
+import like.cn.dfs.common.enums.NettyPacketType;
+import like.cn.dfs.common.utils.PrettyCodes;
 import like.cn.dfs.model.common.NettyPacketHeader;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
@@ -35,7 +38,7 @@ public class NettyPacket {
     /**
      * 解包
      *
-     * @see {@link NettyPacket#write(io.netty.buffer.ByteBuf)}
+     * @see {@link like.cn.dfs.common.codec.NettyPacket#write(io.netty.buffer.ByteBuf)}
      */
     public static NettyPacket parseToPacket(ByteBuf buf) throws InvalidProtocolBufferException {
         // head length
@@ -59,9 +62,23 @@ public class NettyPacket {
     }
 
     /**
+     * 构建消息，传入消息体，以及消息类型
+     *
+     * @return {@link NettyPacket}
+     */
+    public static NettyPacket buildPacket(byte[] body, NettyPacketType packetType) {
+        NettyPacket res = NettyPacket.builder()
+                .body(body)
+                .headers(PrettyCodes.trimMap())
+                .build();
+        res.setPacketType(packetType.value);
+        return res;
+    }
+
+    /**
      * 将当前消息写入到byteBuf中
      *
-     * @see {@link NettyPacket#parseToPacket(io.netty.buffer.ByteBuf)}
+     * @see {@link like.cn.dfs.common.codec.NettyPacket#parseToPacket(io.netty.buffer.ByteBuf)}
      */
     public void write(ByteBuf out) {
         NettyPacketHeader nettyPacketHeader = NettyPacketHeader.newBuilder()
@@ -80,7 +97,73 @@ public class NettyPacket {
         return Integer.parseInt(headers.getOrDefault("packetType", "0"));
     }
 
+    /**
+     * 设置当前消息的类型
+     */
+    public void setPacketType(int packetType) {
+        this.headers.put("packetType", String.valueOf(packetType));
+    }
+
     public byte[] getBody() {
         return body;
+    }
+
+    /**
+     * 获取当前请求的超时时间
+     */
+    public long getTimeoutInMs() {
+        return Long.parseLong(headers.getOrDefault("timeoutInMs", "0"));
+    }
+
+    /**
+     * 设置当前请求的超时时间
+     */
+    public void setTimeoutInMs(long timeoutInMs) {
+        headers.put("timeoutInMs", String.valueOf(timeoutInMs));
+    }
+
+    /**
+     * 获取请求序列号
+     *
+     * @return {@link String}
+     */
+    public String getSequence() {
+        return headers.get("seq");
+    }
+
+    /**
+     * 设置请求序列号
+     *
+     * @param sequence 请求序列号
+     */
+    public void setSequence(@NonNull String sequence) {
+        headers.put("seq", sequence);
+    }
+
+    /**
+     * 是否支持chunk
+     *
+     * @return boolean
+     */
+    public boolean isSupportChunked() {
+        return Boolean.parseBoolean(headers.getOrDefault("supportChunked", "false"));
+    }
+
+    /**
+     * 是否支持chunk
+     */
+    public void setSupportChunked(boolean chunkedFinish) {
+        headers.put("supportChunked", String.valueOf(chunkedFinish));
+    }
+
+    /**
+     * 合并消息
+     */
+    public void mergeChunkBody(NettyPacket other) {
+        int newBodyLength = body.length + other.getBody().length;
+        byte[] newBody = new byte[newBodyLength];
+        System.arraycopy(body, 0, newBody, 0, body.length);
+        System.arraycopy(other.getBody(), 0, newBody, body.length, other.getBody().length);
+        this.body = newBody;
     }
 }

@@ -6,6 +6,8 @@ import like.cn.dfs.common.net.AbstractChannelHandler;
 import like.cn.dfs.common.utils.DefaultScheduler;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
@@ -25,13 +27,13 @@ public class NameNodeHandler extends AbstractChannelHandler {
     @Override
     protected boolean handler(ChannelHandlerContext ctx, NettyPacket nettyPacket) throws Exception {
         byte[] body = nettyPacket.getBody();
-        System.out.println(body);
+        System.out.println(Arrays.toString(body));
         return true;
     }
 
     @Override
     protected Set<Integer> interestPackageTypes() {
-        return null;
+        return Collections.emptySet();
     }
 
     @Override
