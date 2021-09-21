@@ -1,6 +1,9 @@
 package like.cn.dfs.common.net;
 
 import like.cn.dfs.common.codec.NettyPacket;
+import like.cn.dfs.common.enums.NettyPacketType;
+import like.cn.dfs.common.ex.RequestTimeoutException;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 同步获取结果
@@ -8,6 +11,7 @@ import like.cn.dfs.common.codec.NettyPacket;
  * @author <a href="mailto:likelovec@gmail.com">like</a>
  * @date 2021/9/19 11:45
  */
+@Slf4j
 public class SyncRequestPromise {
 
     /** 开始时间 */
@@ -51,7 +55,7 @@ public class SyncRequestPromise {
     }
 
     /**
-     * 添加返回结果
+     * 添加响应结果
      */
     public void result(NettyPacket nettyPacket) {
         synchronized (this) {
@@ -70,6 +74,33 @@ public class SyncRequestPromise {
                 this.response = nettyPacket;
                 this.receiveResponseCompleted = true;
                 notifyAll();
+            }
+        }
+    }
+
+    /**
+     * 获取响应结果
+     */
+    public NettyPacket result() throws RequestTimeoutException {
+        waitForResult();
+        return response;
+    }
+
+    /**
+     * 等待结果返回
+     */
+    private void waitForResult() {
+        synchronized (this) {
+            try {
+                while (!receiveResponseCompleted && !isTimeout) {
+                    wait(10);
+                }
+                if (isTimeout) {
+                    throw new RequestTimeoutException("请求超时: " +
+                            NettyPacketType.getEnum(request.getPacketType()).getDescription());
+                }
+            } catch (Exception e) {
+                log.info("NettyPackageWrapper#waitForResult is interrupt !");
             }
         }
     }

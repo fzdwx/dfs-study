@@ -1,15 +1,23 @@
 package like.cn.dfs.common.codec;
 
+import cn.hutool.core.util.StrUtil;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.netty.buffer.ByteBuf;
 import like.cn.dfs.common.enums.NettyPacketType;
 import like.cn.dfs.common.utils.PrettyCodes;
 import like.cn.dfs.model.common.NettyPacketHeader;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,7 +35,10 @@ import java.util.Map;
  * @date 2021/9/18 15:35
  */
 @Slf4j
+@Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class NettyPacket {
 
     /** 消息体 */
@@ -156,6 +167,10 @@ public class NettyPacket {
         headers.put("supportChunked", String.valueOf(chunkedFinish));
     }
 
+    public void setNodeId(int nodeId) {
+        headers.put("nodeId", String.valueOf(nodeId));
+    }
+
     /**
      * 合并消息
      */
@@ -165,5 +180,55 @@ public class NettyPacket {
         System.arraycopy(body, 0, newBody, 0, body.length);
         System.arraycopy(other.getBody(), 0, newBody, body.length, other.getBody().length);
         this.body = newBody;
+    }
+
+    /**
+     * 拆分消息体
+     *
+     * @return {@link List}<{@link NettyPacket}>
+     */
+    public List<NettyPacket> partitionChunk(boolean supportChunked, int maxPackageSize) {
+        if (!supportChunked) {
+            return Collections.singletonList(this);
+        }
+        int bodyLength = body.length;
+        if (bodyLength <= maxPackageSize) {
+            // 不需要拆包
+            return Collections.singletonList(this);
+        }
+
+        // 开始拆包
+        int packageCount = bodyLength / maxPackageSize;
+        if (bodyLength % maxPackageSize > 0) {
+            packageCount++;
+        }
+        List<NettyPacket> results = new LinkedList<>();
+        int remainLength = bodyLength;
+        for (int i = 0; i < packageCount; i++) {
+            int partitionBodyLength = Math.min(maxPackageSize, remainLength);
+            byte[] partitionBody = new byte[partitionBodyLength];
+            System.arraycopy(body, bodyLength - remainLength, partitionBody, 0, partitionBodyLength);
+            remainLength -= partitionBodyLength;
+            NettyPacket partitionPackage = new NettyPacket();
+            partitionPackage.body = partitionBody;
+            partitionPackage.headers = this.headers;
+            partitionPackage.setSupportChunked(true);
+            results.add(partitionPackage);
+        }
+        // 增加一个结束标记包
+        NettyPacket tailPackage = new NettyPacket();
+        tailPackage.body = new byte[0];
+        tailPackage.headers = this.headers;
+        tailPackage.setSupportChunked(true);
+        results.add(tailPackage);
+        return results;
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "body=" + StrUtil.str(body, StandardCharsets.UTF_8) +
+                ", headers=" + headers +
+                '}';
     }
 }

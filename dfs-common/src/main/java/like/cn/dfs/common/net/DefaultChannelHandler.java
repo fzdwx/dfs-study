@@ -4,6 +4,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.SocketChannel;
 import like.cn.dfs.common.Constants;
 import like.cn.dfs.common.codec.NettyPacket;
+import like.cn.dfs.common.ex.RequestTimeoutException;
 import like.cn.dfs.common.net.listener.NettyConnectListener;
 import like.cn.dfs.common.net.listener.NettyPacketListener;
 import like.cn.dfs.common.utils.DefaultScheduler;
@@ -39,6 +40,19 @@ public class DefaultChannelHandler extends AbstractChannelHandler {
     }
 
     /**
+     * 发送消息，异步转同步获取响应
+     *
+     * @param nettyPacket 网络包
+     *
+     * @return 响应
+     *
+     * @throws IllegalStateException 网络异常
+     */
+    public NettyPacket sendSync(NettyPacket nettyPacket) throws RequestTimeoutException {
+        return this.syncRequestSupport.sendRequest(nettyPacket);
+    }
+
+    /**
      * 发送消息，不需要同步获取响应
      * <p>
      * 可以通过 {@link #addNettyPacketListener(like.cn.dfs.common.net.listener.NettyPacketListener)} 方法获取返回的数据包
@@ -48,6 +62,24 @@ public class DefaultChannelHandler extends AbstractChannelHandler {
     public void send(NettyPacket nettyPacket) throws InterruptedException {
         this.setSequence(nettyPacket);
         this.socketChannel.writeAndFlush(nettyPacket);
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        socketChannel = ( SocketChannel ) ctx.channel();
+        syncRequestSupport.setSocketChannel(socketChannel);
+        invokeConnectListener(true);
+        log.debug("Socket channel is connected. {}", NetUtils.getChannelId(ctx.channel()));
+        ctx.fireChannelActive();
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) {
+        socketChannel = null;
+        syncRequestSupport.setSocketChannel(socketChannel);
+        invokeConnectListener(false);
+        log.debug("Socket channel is disconnected！{}", NetUtils.getChannelId(ctx.channel()));
+        ctx.fireChannelInactive();
     }
 
     /**
@@ -91,24 +123,6 @@ public class DefaultChannelHandler extends AbstractChannelHandler {
     public void clearAllListener() {
         this.nettyConnectListeners.clear();
         this.nettyPacketListeners.clear();
-    }
-
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        socketChannel = ( SocketChannel ) ctx.channel();
-        syncRequestSupport.setSocketChannel(socketChannel);
-        invokeConnectListener(true);
-        log.debug("Socket channel is connected. {}", NetUtils.getChannelId(ctx.channel()));
-        ctx.fireChannelActive();
-    }
-
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) {
-        socketChannel = null;
-        syncRequestSupport.setSocketChannel(socketChannel);
-        invokeConnectListener(false);
-        log.debug("Socket channel is disconnected！{}", NetUtils.getChannelId(ctx.channel()));
-        ctx.fireChannelInactive();
     }
 
     /**

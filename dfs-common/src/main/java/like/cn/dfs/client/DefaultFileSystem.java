@@ -1,18 +1,22 @@
 package like.cn.dfs.client;
 
+import cn.hutool.core.io.FileUtil;
 import com.google.protobuf.InvalidProtocolBufferException;
 import like.cn.dfs.client.tools.CommandLineListener;
 import like.cn.dfs.common.codec.NettyPacket;
 import like.cn.dfs.common.enums.NettyPacketType;
+import like.cn.dfs.common.ex.RequestTimeoutException;
 import like.cn.dfs.common.ha.BackupNodeManager;
 import like.cn.dfs.common.net.NetClient;
 import like.cn.dfs.common.net.RequestWrapper;
 import like.cn.dfs.common.utils.DefaultScheduler;
 import like.cn.dfs.common.utils.PrettyCodes;
 import like.cn.dfs.model.backup.BackupNodeInfo;
+import like.cn.dfs.model.client.MkdirRequest;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 /**
  * 文件系统客户端默认实现
@@ -68,6 +72,31 @@ public class DefaultFileSystem implements FileSystem {
     @Override
     public void send(String message) throws InterruptedException {
         this.netClient.send(NettyPacket.buildPacket(message.getBytes(StandardCharsets.UTF_8), NettyPacketType.UNKNOWN));
+    }
+
+    @Override
+    public void mkdir(String path) throws Exception {
+        mkdir(path, PrettyCodes.trimMap());
+    }
+
+    @Override
+    public void mkdir(String path, Map<String, String> attr) throws Exception {
+        // TODO: 2021/9/21 发送请求先认证
+        path = FileUtil.normalize(path);
+        MkdirRequest mkdirRequest = MkdirRequest.newBuilder().setPath(path).putAllAttr(attr).build();
+        NettyPacket message = NettyPacket.buildPacket(mkdirRequest.toByteArray(), NettyPacketType.MKDIR);
+        this.safeSendSync(message);
+        log.info("[mkdir] success {}", path);
+    }
+
+    @Override
+    public void shutdown() {
+        this.netClient.shutdown();
+    }
+
+    private void safeSendSync(NettyPacket nettyPacket) throws RequestTimeoutException, InterruptedException {
+        // TODO: 2021/9/21 设置用户名
+        this.netClient.sendSync(nettyPacket);
     }
 
     /**

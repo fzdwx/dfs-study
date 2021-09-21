@@ -12,6 +12,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import like.cn.dfs.common.codec.NettyPacket;
+import like.cn.dfs.common.ex.RequestTimeoutException;
 import like.cn.dfs.common.net.listener.NetClientFailListener;
 import like.cn.dfs.common.net.listener.NettyConnectListener;
 import like.cn.dfs.common.net.listener.NettyPacketListener;
@@ -69,7 +70,6 @@ public class NetClient {
     private final AtomicBoolean started = new AtomicBoolean(true);
     /** 连接重试次数 */
     @Setter private int retryTimes;
-    private boolean connected;
 
     public NetClient(String name, DefaultScheduler defaultScheduler) {
         this(name, defaultScheduler, -1);
@@ -114,6 +114,16 @@ public class NetClient {
     public void send(NettyPacket nettyPacket) throws InterruptedException {
         ensureConnected();
         defaultChannelHandler.send(nettyPacket);
+    }
+
+    /**
+     * 发送消息，同步获取返回结果
+     *
+     * @param nettyPacket netty 包
+     */
+    public NettyPacket sendSync(NettyPacket nettyPacket) throws InterruptedException, RequestTimeoutException {
+        ensureConnected();
+        return defaultChannelHandler.sendSync(nettyPacket);
     }
 
     /**

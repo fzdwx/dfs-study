@@ -1,6 +1,7 @@
 package like.cn.dfs.namenode;
 
 import like.cn.dfs.common.utils.DefaultScheduler;
+import like.cn.dfs.namenode.filesystem.DiskNameSystem;
 import like.cn.dfs.namenode.server.NameNodeHandler;
 import like.cn.dfs.namenode.server.NameNodeServer;
 
@@ -17,10 +18,12 @@ public class NameNode {
     private final NameNodeServer nameNodeServer;
     private final NameNodeHandler nameNodeHandler;
     private final DefaultScheduler defaultScheduler;
+    private final DiskNameSystem diskNameSystem;
 
     public NameNode() {
         this.defaultScheduler = new DefaultScheduler("NameNode-Scheduler-");
-        this.nameNodeHandler = new NameNodeHandler(defaultScheduler);
+        this.diskNameSystem = new DiskNameSystem(defaultScheduler);
+        this.nameNodeHandler = new NameNodeHandler(defaultScheduler, diskNameSystem);
         this.nameNodeServer = new NameNodeServer(nameNodeHandler, defaultScheduler);
     }
 

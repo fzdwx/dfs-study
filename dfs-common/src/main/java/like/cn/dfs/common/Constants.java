@@ -26,8 +26,15 @@ public class Constants {
     public static final int NAME_NODE_STATUS_DOWN = 0;
 
     /**
+     * 分块传输，每一块的大小
+     */
+    public static final int CHUNKED_SIZE = ( int ) (MAX_DATA_SIZE * 0.5F);
+
+    /**
      * 应用请求包计数器
      */
     public static AtomicLong REQUEST_COUNTER = new AtomicLong(1);
 
+    /** 文件分隔符 */
+    public static String FileSeparator = "/";
 }

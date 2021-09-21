@@ -2,7 +2,9 @@ package like.cn.dfs.common.net;
 
 import cn.hutool.core.util.StrUtil;
 import io.netty.channel.socket.SocketChannel;
+import like.cn.dfs.common.Constants;
 import like.cn.dfs.common.codec.NettyPacket;
+import like.cn.dfs.common.ex.RequestTimeoutException;
 import like.cn.dfs.common.utils.DefaultScheduler;
 import lombok.Setter;
 
@@ -30,9 +32,13 @@ public class SyncRequestSupport {
     }
 
     /**
-     * 收到响应
+     * 收到服务端返回的消息
      * <p>
-     * 主要作用是判断当前promiseMap中是否存在相同的seq的消息，判断是否支持合并
+     * 主要作用是判断当前promiseMap中是否存在相同的seq的消息
+     * <pre>
+     *     1.保存为response
+     *     2.判断是否支持合并
+     * </pre>
      */
     public boolean onResponse(NettyPacket nettyPacket) {
         String sequence = nettyPacket.getSequence();
@@ -50,6 +56,31 @@ public class SyncRequestSupport {
             }
         }
         return false;
+    }
+
+    /**
+     * 同步发送请求
+     *
+     * @return 响应
+     */
+    public NettyPacket sendRequest(NettyPacket nettyPacket) throws RequestTimeoutException {
+        this.setSequence(nettyPacket);
+        SyncRequestPromise promise = new SyncRequestPromise(nettyPacket);
+        promiseMap.put(nettyPacket.getSequence(), promise);
+        socketChannel.writeAndFlush(nettyPacket);
+        return promise.result();
+    }
+
+    /**
+     * 设置请求的序列号
+     *
+     * @param nettyPacket 请求
+     */
+    private void setSequence(NettyPacket nettyPacket) {
+        if (socketChannel == null || !socketChannel.isActive()) {
+            throw new IllegalStateException("Socket channel is disconnect.");
+        }
+        nettyPacket.setSequence(name + "-" + Constants.REQUEST_COUNTER.getAndIncrement());
     }
 
 

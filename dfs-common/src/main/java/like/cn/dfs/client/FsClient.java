@@ -21,5 +21,7 @@ public class FsClient {
         FileSystem client = getFileSystem(new FileSystemConfig().ip("127.0.0.1").port(1234).connectRetryTimes(3));
 
         client.send("hello");
+        client.mkdir("/hello/world");
+        client.shutdown();
     }
 }
