@@ -30,5 +30,5 @@ public interface FileSystem {
     /**
      * 关闭
      */
-    void shutdown();
+    void close();
 }

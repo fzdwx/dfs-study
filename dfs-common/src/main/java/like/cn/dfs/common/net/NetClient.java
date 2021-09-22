@@ -117,7 +117,8 @@ public class NetClient {
             }
             this.defaultScheduler.shutdown();
             this.defaultChannelHandler.clearAllListener();
-        }
+        } else
+            log.error("{} shutdown fail maybe it not start!", this.name);
     }
 
     /**

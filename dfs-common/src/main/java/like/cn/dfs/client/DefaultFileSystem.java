@@ -91,7 +91,7 @@ public class DefaultFileSystem implements FileSystem {
     }
 
     @Override
-    public void shutdown() {
+    public void close() {
         this.netClient.shutdown();
         this.defaultScheduler.shutdown();
     }

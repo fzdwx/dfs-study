@@ -4,6 +4,9 @@ import lombok.SneakyThrows;
 
 /**
  * 文件客户端
+ * <pre>
+ * {@code 123}
+ *  </pre>
  *
  * @author <a href="mailto:likelovec@gmail.com">like</a>
  * @date 2021/9/19 11:17
@@ -22,6 +25,6 @@ public class FsClient {
 
         client.send("hello");
         client.mkdir("/hello/world");
-        client.shutdown();
+        client.close();
     }
 }
