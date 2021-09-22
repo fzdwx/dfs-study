@@ -33,9 +33,7 @@ public class DefaultScheduler {
 
     public DefaultScheduler(String threadNamePrefix, int coreThreads, boolean daemon) {
         if (shutdown.compareAndSet(true, false)) {
-            executor = new ScheduledThreadPoolExecutor(coreThreads, r -> {
-                return new NetThread(threadNamePrefix + schedulerThreadId.getAndIncrement(), r, daemon);
-            });
+            executor = new ScheduledThreadPoolExecutor(coreThreads, r -> new NetThread(threadNamePrefix + schedulerThreadId.getAndIncrement(), r, daemon));
             // 如果当前执行器关闭了的就不执行任何任务了
             executor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
             executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);

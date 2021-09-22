@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -67,7 +68,7 @@ public class NetClient {
     /** 网络客户端失败的监听器集合 */
     private final List<NetClientFailListener> netClientFailListeners = new ArrayList<>();
     /** 标记是否启动 */
-    private final AtomicBoolean started = new AtomicBoolean(true);
+    private final AtomicBoolean started = new AtomicBoolean(false);
     /** 连接重试次数 */
     @Setter private int retryTimes;
 
@@ -101,6 +102,22 @@ public class NetClient {
      */
     public void connect(String ip, int port) {
         connect(ip, port, 0, 0);
+    }
+
+    /**
+     * 关闭客户端
+     */
+    public void shutdown() {
+        if (log.isDebugEnabled()) {
+            log.debug("Shutdown NetClient : [name={}]", name);
+        }
+        if (started.compareAndSet(true, false)) {
+            if (this.connectThreadGroup != null) {
+                this.connectThreadGroup.shutdownGracefully(1, 1, TimeUnit.SECONDS);
+            }
+            this.defaultScheduler.shutdown();
+            this.defaultChannelHandler.clearAllListener();
+        }
     }
 
     /**
@@ -144,8 +161,9 @@ public class NetClient {
         int remainTimeout = timeout;
         synchronized (this) {
             while (!isConnected()) {
-                if (!started.get()) {
-                    throw new InterruptedException("无法连接上服务器：" + name);
+                if (started.get()) {
+                    // throw new InterruptedException("无法连接上服务器：" + name);
+                    break;
                 }
                 if (timeout > 0) {
                     if (remainTimeout <= 0) {
@@ -165,21 +183,6 @@ public class NetClient {
      */
     public boolean isConnected() {
         return defaultChannelHandler.isConnected();
-    }
-
-    /**
-     * 关闭客户端
-     */
-    public void shutdown() {
-        if (log.isDebugEnabled()) {
-            log.debug("Shutdown NetClient : [name={}]", name);
-        }
-        if (started.compareAndSet(true, false)) {
-            if (connectThreadGroup != null) {
-                connectThreadGroup.shutdownGracefully();
-            }
-            defaultChannelHandler.clearAllListener();
-        }
     }
 
     /**
@@ -235,8 +238,10 @@ public class NetClient {
             ResourceLeakDetector.setLevel(Level.ADVANCED);
             try {
                 ChannelFuture channelFuture = bootstrap.connect(ip, port).sync();
+                // mark start
+                this.started.compareAndSet(false, true);
                 channelFuture.channel().closeFuture().addListener(( ChannelFutureListener ) f -> f.channel().close());
-                channelFuture.channel().closeFuture().sync();
+                ChannelFuture sync = channelFuture.channel().closeFuture().sync();
             } catch (InterruptedException e) {
                 log.info("发起连接后同步等待连接被打断");
             } finally {

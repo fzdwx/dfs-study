@@ -41,7 +41,7 @@ public class DefaultFileSystem implements FileSystem {
         int connectRetryTime = config.connectRetryTimes() > 0 ? config.connectRetryTimes() : -1;
         this.config = config;
         this.defaultScheduler = new DefaultScheduler("fs-client scheduler");
-        this.netClient = new NetClient("fs-client nameNode-" + config.ip(), defaultScheduler, connectRetryTime);
+        this.netClient = new NetClient("fs-client nameNode-" + config.ip() + ":" + config.port(), defaultScheduler, connectRetryTime);
         this.backupNodeManager = new BackupNodeManager(defaultScheduler);
     }
 
@@ -67,7 +67,7 @@ public class DefaultFileSystem implements FileSystem {
         // 异步连接
         this.netClient.connect(config.ip(), config.port());
         this.netClient.ensureConnected();
-        log.info("和NameNode建立连接成功");
+        log.info("connect success {}", this.netClient.getName());
     }
 
     @Override
@@ -93,6 +93,7 @@ public class DefaultFileSystem implements FileSystem {
     @Override
     public void shutdown() {
         this.netClient.shutdown();
+        this.defaultScheduler.shutdown();
     }
 
     private void safeSendSync(NettyPacket nettyPacket) throws RequestTimeoutException, InterruptedException {
