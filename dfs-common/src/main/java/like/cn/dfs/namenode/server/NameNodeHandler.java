@@ -50,15 +50,17 @@ public class NameNodeHandler extends AbstractChannelHandler {
         return true;
     }
 
+    private boolean handleFetchBackupNodeInfo(RequestWrapper requestWrapper) {
+        return true;
+    }
+
     private boolean isThisNode(int nodeId) {
         return this.nodeId == nodeId;
     }
 
     /**
      * 根据文件名获取处理该请求的节点ID
-     *
      * @param filename 文件名
-     *
      * @return 节点ID
      */
     private int getNodeId(String filename) {
@@ -78,6 +80,7 @@ public class NameNodeHandler extends AbstractChannelHandler {
         });
         return switch (packetType) {
             case MKDIR -> handlerMkdir(requestWrapper);
+            case FETCH_BACKUP_NODE_INFO -> handleFetchBackupNodeInfo(requestWrapper);
             default -> false;
         };
     }

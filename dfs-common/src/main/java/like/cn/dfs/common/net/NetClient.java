@@ -48,7 +48,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * 同样可以通过设置 {@link #addNettyPackageListener(like.cn.dfs.common.net.listener.NettyPacketListener)} 来异步监听底层的网络包
  *
  * </pre>
- *
  * @author <a href="mailto:likelovec@gmail.com">like</a>
  * @date 2021/9/19 11:30
  */
@@ -136,7 +135,6 @@ public class NetClient {
 
     /**
      * 发送消息，同步获取返回结果
-     *
      * @param nettyPacket netty 包
      */
     public NettyPacket sendSync(NettyPacket nettyPacket) throws InterruptedException, RequestTimeoutException {
@@ -155,8 +153,7 @@ public class NetClient {
     /**
      * 同步等待确保连接已经建立。
      * 如果连接断开了，会阻塞直到连接重新建立
-     *
-     * @throws InterruptedException 中断异常
+     * @exception InterruptedException 中断异常
      */
     public void ensureConnected(int timeout) throws InterruptedException {
         int remainTimeout = timeout;
@@ -179,7 +176,6 @@ public class NetClient {
 
     /**
      * 是否已经连接
-     *
      * @return boolean
      */
     public boolean isConnected() {
@@ -221,7 +217,6 @@ public class NetClient {
      * <PRE>
      * 异步连接，保证在后台执行，主要作用是为了重试
      * </PRE>
-     *
      * @param ip           ip地址
      * @param port         端口号
      * @param connectTimes 当前重试次数
@@ -258,7 +253,7 @@ public class NetClient {
     private void maybeRetry(String ip, int port, int connectTimes) {
         if (started.get()) {
             boolean retry = retryTimes < 0 || connectTimes <= retryTimes;
-            if (retry) {
+            if (retryTimes == -1 || retry) {
                 log.error("重新发起连接：[started={}, name={}]", started.get(), name);
                 connect(ip, port, connectTimes, 3000);
             } else {

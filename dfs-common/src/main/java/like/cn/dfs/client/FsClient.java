@@ -20,10 +20,9 @@ public class FsClient {
 
     @SneakyThrows
     public static void main(String[] args) {
-        FileSystem client = getFileSystem(new FileSystemConfig().ip("127.0.0.1").port(1234).connectRetryTimes(3));
+        FileSystem client = getFileSystem(new FileSystemConfig().ip("127.0.0.1").port(1234).connectRetryTimes(-1));
 
         client.send("hello");
         client.mkdir("/hello/world");
-        client.close();
     }
 }

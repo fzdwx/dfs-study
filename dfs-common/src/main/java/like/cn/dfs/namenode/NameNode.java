@@ -1,6 +1,7 @@
 package like.cn.dfs.namenode;
 
 import like.cn.dfs.common.utils.DefaultScheduler;
+import like.cn.dfs.namenode.config.NameNodeConfig;
 import like.cn.dfs.namenode.filesystem.DiskNameSystem;
 import like.cn.dfs.namenode.server.NameNodeHandler;
 import like.cn.dfs.namenode.server.NameNodeServer;
@@ -20,16 +21,21 @@ public class NameNode {
     private final DefaultScheduler defaultScheduler;
     private final DiskNameSystem diskNameSystem;
 
-    public NameNode() {
+    public NameNode(NameNodeConfig nameNodeConfig) {
         this.defaultScheduler = new DefaultScheduler("NameNode-Scheduler-");
-        this.diskNameSystem = new DiskNameSystem(defaultScheduler);
+        this.diskNameSystem = new DiskNameSystem(nameNodeConfig, defaultScheduler);
         this.nameNodeHandler = new NameNodeHandler(defaultScheduler, diskNameSystem);
-        this.nameNodeServer = new NameNodeServer(nameNodeHandler, defaultScheduler);
+        this.nameNodeServer = new NameNodeServer(nameNodeHandler, defaultScheduler, diskNameSystem);
     }
 
     public static void main(String[] args) {
         try {
-            NameNode nameNode = new NameNode();
+            NameNodeConfig nameNodeConfig = NameNodeConfig.builder()
+                    .port(1234)
+                    .editLogFlushThreshold(NameNodeConfig.DEFAULT_EDITLOG_FLUSH_THRESHOLD)
+                    .baseDir("/data/namenode")
+                    .build();
+            NameNode nameNode = new NameNode(nameNodeConfig);
             nameNode.start();
 
         } catch (Exception e) {
@@ -39,8 +45,7 @@ public class NameNode {
 
     /**
      * 启动nameNode
-     *
-     * @throws Exception 异常
+     * @exception Exception 异常
      */
     public void start() throws Exception {
         if (started.compareAndSet(false, true)) {
