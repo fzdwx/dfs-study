@@ -5,7 +5,6 @@ import lombok.experimental.Accessors;
 
 /**
  * 文件客户端配置
- *
  * @author <a href="mailto:likelovec@gmail.com">like</a>
  * @date 2021/9/19 11:19
  */
@@ -19,4 +18,11 @@ public class FileSystemConfig {
     private int port;
     /** 连接重试次数 */
     private int connectRetryTimes;
+    /** 用户名 */
+    private String username;
+    /** 密码 */
+    private String secret;
+    /** 用户令牌 */
+    private volatile String userToken;
+    private int ack = 0;
 }

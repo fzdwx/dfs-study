@@ -63,4 +63,8 @@ public class NameNodeConfig {
     public String getEditLogFile(long startTxId, long endTxId) {
         return baseDir + Constants.FileSeparator + "editslog-" + startTxId + "_" + endTxId + ".log";
     }
+
+    public String getAuthInfoFile() {
+        return baseDir + "/" + "auth.meta";
+    }
 }

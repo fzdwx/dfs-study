@@ -12,7 +12,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 线程调度器
- *
  * @author <a href="mailto:likelovec@gmail.com">like</a>
  * @date 2021/9/18 17:02
  */
@@ -56,14 +55,13 @@ public class DefaultScheduler {
 
     /**
      * 执行任务
-     *
      * @param name     任务名称
      * @param runnable task
      * @param delay    延迟时间
      * @param period   调度周期
      * @param timeUnit 时间单位
      */
-    public void schedule(String name, Runnable runnable, int delay, int period, TimeUnit timeUnit) {
+    public void schedule(String name, Runnable runnable, long delay, long period, TimeUnit timeUnit) {
         if (shutdown.get()) return;
 
         if (log.isDebugEnabled()) {

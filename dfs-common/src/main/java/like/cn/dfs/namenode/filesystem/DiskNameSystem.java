@@ -36,6 +36,28 @@ public class DiskNameSystem extends AbstractFsNameSystem {
         // Prometheus.gauge("namenode_fs_memory_cost", "FSDirectory操作耗时", "op", "mkdir", stopWatch.getLastTaskTimeMillis());
     }
 
+    @Override
+    public boolean createFile(String filename, Map<String, String> attr) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        if (!super.createFile(filename, attr)) {
+            return false;
+        }
+        this.editLog.logEdit(new EditLogWrapper(FsOpType.CREATE.getValue(), filename, attr));
+        // Prometheus.gauge("namenode_fs_memory_cost", "FSDirectory操作耗时", "op", "createFile", stopWatch.getTime());
+        return true;
+    }
+
+    @Override
+    public Node listFiles(String realFileName) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        final Node node = super.listFiles(realFileName);
+        stopWatch.stop();
+        // Prometheus.gauge("namenode_fs_memory_cost", "FSDirectory操作耗时", "op", "listFiles", stopWatch.getTime());
+        return node;
+    }
+
     public NameNodeConfig getNameNodeConfig() {
         return nameNodeConfig;
     }

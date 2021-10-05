@@ -2,9 +2,11 @@ package like.cn.dfs.namenode;
 
 import like.cn.dfs.common.utils.DefaultScheduler;
 import like.cn.dfs.namenode.config.NameNodeConfig;
+import like.cn.dfs.namenode.datanode.DataNodeManager;
 import like.cn.dfs.namenode.filesystem.DiskNameSystem;
 import like.cn.dfs.namenode.server.NameNodeHandler;
 import like.cn.dfs.namenode.server.NameNodeServer;
+import like.cn.dfs.namenode.server.UserManager;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -20,11 +22,15 @@ public class NameNode {
     private final NameNodeHandler nameNodeHandler;
     private final DefaultScheduler defaultScheduler;
     private final DiskNameSystem diskNameSystem;
+    private final DataNodeManager dataNodeManager;
+    private final UserManager userManager;
 
     public NameNode(NameNodeConfig nameNodeConfig) {
         this.defaultScheduler = new DefaultScheduler("NameNode-Scheduler-");
+        this.userManager = new UserManager(nameNodeConfig, defaultScheduler);
         this.diskNameSystem = new DiskNameSystem(nameNodeConfig, defaultScheduler);
-        this.nameNodeHandler = new NameNodeHandler(defaultScheduler, diskNameSystem);
+        this.dataNodeManager = new DataNodeManager(userManager, nameNodeConfig, defaultScheduler);
+        this.nameNodeHandler = new NameNodeHandler(userManager, defaultScheduler, diskNameSystem, dataNodeManager);
         this.nameNodeServer = new NameNodeServer(nameNodeHandler, defaultScheduler, diskNameSystem);
     }
 

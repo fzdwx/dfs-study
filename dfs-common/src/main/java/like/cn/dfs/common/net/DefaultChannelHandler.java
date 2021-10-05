@@ -18,7 +18,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * 默认消息处理器
- *
  * @author <a href="mailto:likelovec@gmail.com">like</a>
  * @date 2021/9/19 11:35
  */
@@ -41,12 +40,9 @@ public class DefaultChannelHandler extends AbstractChannelHandler {
 
     /**
      * 发送消息，异步转同步获取响应
-     *
      * @param nettyPacket 网络包
-     *
      * @return 响应
-     *
-     * @throws IllegalStateException 网络异常
+     * @exception IllegalStateException 网络异常
      */
     public NettyPacket sendSync(NettyPacket nettyPacket) throws RequestTimeoutException {
         return this.syncRequestSupport.sendRequest(nettyPacket);
@@ -56,8 +52,7 @@ public class DefaultChannelHandler extends AbstractChannelHandler {
      * 发送消息，不需要同步获取响应
      * <p>
      * 可以通过 {@link #addNettyPacketListener(like.cn.dfs.common.net.listener.NettyPacketListener)} 方法获取返回的数据包
-     *
-     * @throws IllegalStateException 网络异常
+     * @exception IllegalStateException 网络异常
      */
     public void send(NettyPacket nettyPacket) throws InterruptedException {
         this.setSequence(nettyPacket);
@@ -84,7 +79,6 @@ public class DefaultChannelHandler extends AbstractChannelHandler {
 
     /**
      * 标记有其他处理程序
-     *
      * @param hasOtherHandler 有其他处理程序
      */
     public void markHasOtherHandler(boolean hasOtherHandler) {
@@ -101,7 +95,6 @@ public class DefaultChannelHandler extends AbstractChannelHandler {
 
     /**
      * 添加连接监听器
-     *
      * @param listener 侦听器 {@link like.cn.dfs.common.net.listener.NettyConnectListener}
      */
     public void addNettyConnectListener(NettyConnectListener listener) {
@@ -110,7 +103,6 @@ public class DefaultChannelHandler extends AbstractChannelHandler {
 
     /**
      * 添加数据包监听器
-     *
      * @see {@link #invokeListeners(RequestWrapper)}
      */
     public void addNettyPacketListener(NettyPacketListener listener) {
@@ -125,9 +117,12 @@ public class DefaultChannelHandler extends AbstractChannelHandler {
         this.nettyPacketListeners.clear();
     }
 
+    public SocketChannel socketChannel() {
+        return socketChannel;
+    }
+
     /**
      * 回调连接监听器
-     *
      * @param isConnected 是否连接上
      */
     private void invokeConnectListener(boolean isConnected) {
@@ -142,7 +137,6 @@ public class DefaultChannelHandler extends AbstractChannelHandler {
 
     /**
      * 设置请求序列号
-     *
      * @param nettyPacket 网状的包
      */
     private void setSequence(NettyPacket nettyPacket) {
@@ -154,7 +148,6 @@ public class DefaultChannelHandler extends AbstractChannelHandler {
 
     /**
      * 回调消息监听器
-     *
      * @param requestWrapper 网络包
      */
     private void invokeListeners(RequestWrapper requestWrapper) {

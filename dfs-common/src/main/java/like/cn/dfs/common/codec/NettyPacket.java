@@ -30,7 +30,6 @@ import java.util.Map;
  *   +--------------+-------------------------+---------------+-----------------------------+
  *     4byte                                     4 byte
  * </pre>
- *
  * @author <a href="mailto:likelovec@gmail.com">like</a>
  * @date 2021/9/18 15:35
  */
@@ -48,7 +47,6 @@ public class NettyPacket {
 
     /**
      * 解包
-     *
      * @see {@link like.cn.dfs.common.codec.NettyPacket#write(io.netty.buffer.ByteBuf)}
      */
     public static NettyPacket parseToPacket(ByteBuf buf) throws InvalidProtocolBufferException {
@@ -74,7 +72,6 @@ public class NettyPacket {
 
     /**
      * 构建消息，传入消息体，以及消息类型
-     *
      * @return {@link NettyPacket}
      */
     public static NettyPacket buildPacket(byte[] body, NettyPacketType packetType) {
@@ -88,7 +85,6 @@ public class NettyPacket {
 
     /**
      * 将当前消息写入到byteBuf中
-     *
      * @see {@link like.cn.dfs.common.codec.NettyPacket#parseToPacket(io.netty.buffer.ByteBuf)}
      */
     public void write(ByteBuf out) {
@@ -103,7 +99,6 @@ public class NettyPacket {
 
     /**
      * 合并消息
-     *
      * @see {@link #parseToPacket(io.netty.buffer.ByteBuf)} 在这里分包
      */
     public void mergeChunkBody(NettyPacket other) {
@@ -116,8 +111,7 @@ public class NettyPacket {
 
     /**
      * 拆分消息体
-     *
-     * @return {@link List}<{@link NettyPacket}>
+     * @return {@link java.util.List}<{@link NettyPacket}>
      */
     public List<NettyPacket> partitionChunk(boolean supportChunked, int maxPackageSize) {
         if (!supportChunked) {
@@ -186,7 +180,6 @@ public class NettyPacket {
 
     /**
      * 获取请求序列号
-     *
      * @return {@link String}
      */
     public String getSequence() {
@@ -195,7 +188,6 @@ public class NettyPacket {
 
     /**
      * 设置请求序列号
-     *
      * @param sequence 请求序列号
      */
     public void setSequence(@NonNull String sequence) {
@@ -204,7 +196,6 @@ public class NettyPacket {
 
     /**
      * 是否支持chunk
-     *
      * @return boolean
      */
     public boolean isSupportChunked() {
@@ -232,5 +223,45 @@ public class NettyPacket {
                 "body=" + StrUtil.str(body, StandardCharsets.UTF_8) +
                 ", headers=" + headers +
                 '}';
+    }
+
+    public boolean isError() {
+        return !isSuccess();
+    }
+
+    public String getError() {
+        return headers.getOrDefault("error", null);
+    }
+
+    public String getUsername() {
+        return headers.get("username");
+    }
+
+    public void setUsername(String username) {
+        headers.put("username", username);
+    }
+
+    public void setAck(int ack) {
+        headers.put("ack", String.valueOf(ack));
+    }
+
+    public boolean getBroadcast() {
+        return Boolean.parseBoolean(headers.getOrDefault("broadcast", "false"));
+    }
+
+    public void setBroadcast(boolean broadcast) {
+        headers.put("broadcast", String.valueOf(broadcast));
+    }
+
+    public String getUserToken() {
+        return headers.getOrDefault("userToken", "");
+    }
+
+    public void setUserToken(String token) {
+        headers.put("userToken", token);
+    }
+
+    private boolean isSuccess() {
+        return getError() == null;
     }
 }

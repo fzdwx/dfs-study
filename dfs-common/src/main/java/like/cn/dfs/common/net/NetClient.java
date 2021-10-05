@@ -8,6 +8,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
@@ -212,6 +213,10 @@ public class NetClient {
         this.netClientFailListeners.add(netClientFailListener);
     }
 
+    public SocketChannel socketChannel() {
+        return defaultChannelHandler.socketChannel();
+    }
+
     /**
      * 连接
      * <PRE>
@@ -237,7 +242,7 @@ public class NetClient {
                 // mark start
                 this.started.compareAndSet(false, true);
                 channelFuture.channel().closeFuture().addListener(( ChannelFutureListener ) f -> f.channel().close());
-                ChannelFuture sync = channelFuture.channel().closeFuture().sync();
+                channelFuture.channel().closeFuture().sync();
             } catch (InterruptedException e) {
                 log.info("发起连接后同步等待连接被打断");
             } finally {
@@ -248,7 +253,7 @@ public class NetClient {
     }
 
     /**
-     * 尝试重新连接
+     * 断开链接后，尝试重新连接
      */
     private void maybeRetry(String ip, int port, int connectTimes) {
         if (started.get()) {

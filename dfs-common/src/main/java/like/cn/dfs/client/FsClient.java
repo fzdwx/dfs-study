@@ -1,5 +1,6 @@
 package like.cn.dfs.client;
 
+import cn.hutool.core.io.FileUtil;
 import lombok.SneakyThrows;
 
 /**
@@ -20,9 +21,12 @@ public class FsClient {
 
     @SneakyThrows
     public static void main(String[] args) {
-        FileSystem client = getFileSystem(new FileSystemConfig().ip("127.0.0.1").port(1234).connectRetryTimes(-1));
-
-        client.send("hello");
+        FileSystem client = getFileSystem(new FileSystemConfig().ip("127.0.0.1")
+                .port(1234)
+                .connectRetryTimes(-1)
+                .username("like")
+                .secret("like"));
         client.mkdir("/hello/world");
+        client.upload(FileUtil.file("C:\\Users\\pdd20\\Pictures\\Camera Roll\\1.jfif"), "/hello/world/1.jfif");
     }
 }

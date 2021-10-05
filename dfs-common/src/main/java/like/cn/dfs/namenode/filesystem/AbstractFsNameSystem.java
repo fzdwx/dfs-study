@@ -21,4 +21,18 @@ public abstract class AbstractFsNameSystem implements FsNameSystem {
     public void mkdir(String path, Map<String, String> attr) {
         this.directory.mkdir(path, attr);
     }
+
+    @Override
+    public boolean createFile(String filename, Map<String, String> attr) {
+        return this.directory.createFile(filename, attr);
+    }
+
+    /**
+     * 获取列表文件
+     * @param filename 文件路径
+     * @return {@link Node} 文件列表
+     */
+    public Node listFiles(String filename) {
+        return this.directory.listFiles(filename);
+    }
 }

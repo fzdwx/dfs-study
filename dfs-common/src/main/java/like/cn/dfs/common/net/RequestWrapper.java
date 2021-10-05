@@ -11,7 +11,6 @@ import java.util.List;
 
 /**
  * 网络请求的包装器
- *
  * @author <a href="mailto:likelovec@gmail.com">like</a>
  * @date 2021/9/19 12:11
  */
@@ -50,10 +49,9 @@ public class RequestWrapper {
 
     /**
      * 发送响应
-     *
      * @param response 响应
      */
-    private void sendResponse(MessageLite response) {
+    public void sendResponse(MessageLite response) {
         byte[] body = response == null ? new byte[0] : response.toByteArray();
         NettyPacket nettyResponse = NettyPacket.buildPacket(body, NettyPacketType.getEnum(request.getPacketType()));
         // 手动分包
@@ -66,13 +64,17 @@ public class RequestWrapper {
         }
     }
 
-    private void sendResponse(NettyPacket response, String sequence) {
+    public void sendResponse(NettyPacket response, String sequence) {
         response.setSequence(sequence);
         response.setNodeId(nodeId);
         ctx.writeAndFlush(response);
         if (listener != null) {
             listener.onResponse(response.getBody().length);
         }
+    }
+
+    public ChannelHandlerContext getCtx() {
+        return ctx;
     }
 
     // TODO: 2021/9/19
