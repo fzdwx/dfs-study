@@ -36,6 +36,14 @@ public class UserManager {
         this.defaultScheduler = defaultScheduler;
         this.nameNodeConfig = nameNodeConfig;
         this.userMap = loadUserInfoFromDisk(nameNodeConfig);
+
+        // todo 手动初始化用户
+        final User user = new User();
+        user.setUsername("like");
+        user.setSecret("like");
+        user.setStorageInfo(new User.StorageInfo());
+        this.userMap.put("like", user);
+
         this.defaultScheduler.schedule("刷新用户数据到磁盘", this::refreshAuthInfo,
                 60 * 60 * 1000, 60 * 60 * 1000, TimeUnit.MILLISECONDS);
         Runtime.getRuntime().addShutdownHook(new Thread(this::refreshAuthInfo));
@@ -46,7 +54,10 @@ public class UserManager {
     }
 
     /**
-     * 认证，保存每个用户对应的认证信息
+     * 认证
+     * <pre>
+     *     每有一个客户端接入，就掉用这个接口，验证用户信息是否存在
+     * </pre>
      * @param channel          通道
      * @param authenticateInfo 验证信息
      * @return boolean

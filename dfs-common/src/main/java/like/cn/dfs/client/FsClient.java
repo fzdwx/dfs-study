@@ -22,7 +22,7 @@ public class FsClient {
     @SneakyThrows
     public static void main(String[] args) {
         FileSystem client = getFileSystem(new FileSystemConfig().ip("127.0.0.1")
-                .port(1234)
+                .port(2341)
                 .connectRetryTimes(-1)
                 .username("like")
                 .secret("like"));

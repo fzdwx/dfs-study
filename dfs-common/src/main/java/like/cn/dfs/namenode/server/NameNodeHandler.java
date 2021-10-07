@@ -26,6 +26,7 @@ import like.cn.dfs.namenode.filesystem.Node;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +34,7 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 /**
+ * nameNode 消息处理器
  * @author <a href="mailto:likelovec@gmail.com">like</a>
  * @date 2021/9/18 16:59
  */
@@ -79,11 +81,11 @@ public class NameNodeHandler extends AbstractChannelHandler {
         final String realFileName = Constants.FileSeparator + request.getUsername() + createFileRequest.getFilename();
         final int nodeId = getNodeId(realFileName);
         if (this.nodeId == nodeId) {
-            final Map<String, String> attrMap = createFileRequest.getAttrMap();
+            final Map<String, String> attrMap = new HashMap<>(createFileRequest.getAttrMap());
             attrMap.put(Constants.ATTR_FILE_SIZE, String.valueOf(createFileRequest.getFileSize()));
             final int replicaNum = getReplicaNum(attrMap, attrMap.get(Constants.ATTR_REPLICA_NUM));
             Node node = diskNameSystem.listFiles(realFileName);
-            if (ObjectUtil.isNull(node)) {
+            if (!ObjectUtil.isNull(node)) {
                 throw new RuntimeException("文件已存在 :" + createFileRequest.getFilename());
             }
             List<DataNodeInfo> dataNodeList = dataNodeManager.allocateDataNodes(request.getUsername(), replicaNum, realFileName);

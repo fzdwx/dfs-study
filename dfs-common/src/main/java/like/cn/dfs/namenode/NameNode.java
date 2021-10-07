@@ -37,8 +37,14 @@ public class NameNode {
     public static void main(String[] args) {
         try {
             NameNodeConfig nameNodeConfig = NameNodeConfig.builder()
-                    .port(1234)
+                    .port(2341)
+                    .httpPort(8081)
                     .editLogFlushThreshold(NameNodeConfig.DEFAULT_EDITLOG_FLUSH_THRESHOLD)
+                    .dataNodeHeartbeatTimeout(600000)
+                    .replicaNum(1)
+                    .dataNodeAliveCheckInterval(30000)
+                    .nameNodeLaunchMode("single")
+                    .nameNodeId(1)
                     .baseDir("/data/namenode")
                     .build();
             NameNode nameNode = new NameNode(nameNodeConfig);
