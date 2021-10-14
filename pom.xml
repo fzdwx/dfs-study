@@ -9,7 +9,6 @@
     <packaging>pom</packaging>
     <version>study</version>
     <modules>
-        <module>dfs-common</module>
     </modules>
 
     <properties>
