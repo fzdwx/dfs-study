@@ -591,7 +591,9 @@ public final class UserChangeEvent extends
       if (userEntityBuilder_ == null) {
         if (userEntity_ != null) {
           userEntity_ =
-                  like.cn.dfs.model.namenode.UserEntity.newBuilder(userEntity_).mergeFrom(value).buildPartial();
+                  like.cn.dfs.model.namenode.UserEntity.newBuilder(userEntity_)
+                          .mergeFrom(value)
+                          .buildPartial();
         } else {
           userEntity_ = value;
         }

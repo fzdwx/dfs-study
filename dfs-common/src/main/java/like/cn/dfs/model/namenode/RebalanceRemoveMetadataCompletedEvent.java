@@ -448,7 +448,8 @@ public final class RebalanceRemoveMetadataCompletedEvent extends
     }
 
     public Builder mergeFrom(like.cn.dfs.model.namenode.RebalanceRemoveMetadataCompletedEvent other) {
-      if (other == like.cn.dfs.model.namenode.RebalanceRemoveMetadataCompletedEvent.getDefaultInstance()) return this;
+      if (other == like.cn.dfs.model.namenode.RebalanceRemoveMetadataCompletedEvent.getDefaultInstance())
+        return this;
       if (other.getRebalanceNodeId() != 0) {
         setRebalanceNodeId(other.getRebalanceNodeId());
       }

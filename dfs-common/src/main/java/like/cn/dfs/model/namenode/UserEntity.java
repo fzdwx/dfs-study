@@ -846,7 +846,9 @@ public final class UserEntity extends
       if (storageBuilder_ == null) {
         if (storage_ != null) {
           storage_ =
-                  like.cn.dfs.model.namenode.UserStorageEntity.newBuilder(storage_).mergeFrom(value).buildPartial();
+                  like.cn.dfs.model.namenode.UserStorageEntity.newBuilder(storage_)
+                          .mergeFrom(value)
+                          .buildPartial();
         } else {
           storage_ = value;
         }
